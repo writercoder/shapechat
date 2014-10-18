@@ -50,7 +50,8 @@
     Chat.prototype.doColouring = function() {
       var color;
       this.analyser.getByteFrequencyData(this.bands);
-      color = Math.floor(this.maxFrequency() * 16777215 / 1024).toString(16);
+      color = Math.floor(this.maxFrequency() * 16777215 / 1024).toString(16).toUpperCase();
+      color = ("000000" + color).substr(-6);
       return this.shape.draw(this.context, "\#" + color);
     };
 

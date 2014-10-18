@@ -32,7 +32,8 @@ class Chat
 
   doColouring: =>
     @analyser.getByteFrequencyData @bands
-    color = Math.floor(@maxFrequency() * 16777215 / 1024).toString(16)
+    color = Math.floor(@maxFrequency() * 16777215 / 1024).toString(16).toUpperCase()
+    color = ("000000" + color).substr(-6)
     @shape.draw( @context, "\##{color}" )
 
 
