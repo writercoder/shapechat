@@ -1,9 +1,10 @@
 
 class Square
 
-  draw: (context, colour) ->
+  draw: (context, color) ->
+    console.log( "Told to draw #{color}")
     context.rect( 20, 20, 150, 150 )
-    context.fillStyle = colour
+    context.fillStyle = color
     context.fill()
 
 class Chat
@@ -16,31 +17,33 @@ class Chat
 
   colorShape: (mediaStream) =>
     @stream = mediaStream
-    @audioContext = new AudioContext
+    @audioContext = new AudioContext()
     @analyser = @audioContext.createAnalyser()
+    @analyser.fftSize = 1024
     # @analyser.minDecibels = -90;
     # @analyser.maxDecibels = -10;
     # @analyser.smoothingTimeConstant = 0.85;
 
     @source = @audioContext.createMediaStreamSource(@stream)
-    # @analyser.connect( @source )
     @source.connect( @analyser )
-    @bands = new Uint32Array(4096)
+    @analyser.connect( @audioContext.destination )
+    @bands = new Uint8Array(@analyser.frequencyBinCount)
     setInterval( @doColouring, 100 )
 
   doColouring: =>
     @analyser.getByteFrequencyData @bands
-    color = (@maxFrequency() * 16777215 / 1024).toString(16)
-    @shape.draw( @context, "\##{color}" )
+    color = Math.floor(@maxFrequency() * 16777215 / 1024).toString(16)
+    @shape.draw( @context, "red" ) # "\##{color}" )
 
 
-  maxFrequency: ->
+  maxFrequency: =>
     max = 0
     freq = 0
-    for i in [0...4096]
+    for i in [0...@analyser.frequencyBinCount]
+      alert( "Non-zero!" ) if @bands[i] > 0
       if @bands[i] > max
         freq = i
-        max = bands[i]
+        max = @bands[i]
     console.log( "Max #{max} Freq #{freq}" )
     return freq
 
@@ -52,5 +55,8 @@ class Chat
     @context = document.getElementById("shapeCanvas").getContext("2d")
     $('#speakMe').click( @drawShape )
 
-$(-> new Chat().listen())
+$ ->
+  chat = new Chat()
+  chat.listen()
+  chat.drawShape()
   

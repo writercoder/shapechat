@@ -6,9 +6,10 @@
   Square = (function() {
     function Square() {}
 
-    Square.prototype.draw = function(context, colour) {
+    Square.prototype.draw = function(context, color) {
+      console.log("Told to draw " + color);
       context.rect(20, 20, 150, 150);
-      context.fillStyle = colour;
+      context.fillStyle = color;
       return context.fill();
     };
 
@@ -19,6 +20,7 @@
   Chat = (function() {
     function Chat() {
       this.error = __bind(this.error, this);
+      this.maxFrequency = __bind(this.maxFrequency, this);
       this.doColouring = __bind(this.doColouring, this);
       this.colorShape = __bind(this.colorShape, this);
       this.drawShape = __bind(this.drawShape, this);
@@ -35,29 +37,34 @@
 
     Chat.prototype.colorShape = function(mediaStream) {
       this.stream = mediaStream;
-      this.audioContext = new AudioContext;
+      this.audioContext = new AudioContext();
       this.analyser = this.audioContext.createAnalyser();
+      this.analyser.fftSize = 1024;
       this.source = this.audioContext.createMediaStreamSource(this.stream);
       this.source.connect(this.analyser);
-      this.bands = new Uint32Array(4096);
+      this.analyser.connect(this.audioContext.destination);
+      this.bands = new Uint8Array(this.analyser.frequencyBinCount);
       return setInterval(this.doColouring, 100);
     };
 
     Chat.prototype.doColouring = function() {
       var color;
       this.analyser.getByteFrequencyData(this.bands);
-      color = (this.maxFrequency() * 16777215 / 1024).toString(16);
-      return this.shape.draw(this.context, "\#" + color);
+      color = Math.floor(this.maxFrequency() * 16777215 / 1024).toString(16);
+      return this.shape.draw(this.context, "red");
     };
 
     Chat.prototype.maxFrequency = function() {
-      var freq, i, max, _i;
+      var freq, i, max, _i, _ref;
       max = 0;
       freq = 0;
-      for (i = _i = 0; _i < 4096; i = ++_i) {
+      for (i = _i = 0, _ref = this.analyser.frequencyBinCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+        if (this.bands[i] > 0) {
+          alert("Non-zero!");
+        }
         if (this.bands[i] > max) {
           freq = i;
-          max = bands[i];
+          max = this.bands[i];
         }
       }
       console.log("Max " + max + " Freq " + freq);
@@ -78,7 +85,10 @@
   })();
 
   $(function() {
-    return new Chat().listen();
+    var chat;
+    chat = new Chat();
+    chat.listen();
+    return chat.drawShape();
   });
 
 }).call(this);
