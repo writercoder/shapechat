@@ -33,14 +33,13 @@ class Chat
   doColouring: =>
     @analyser.getByteFrequencyData @bands
     color = Math.floor(@maxFrequency() * 16777215 / 1024).toString(16)
-    @shape.draw( @context, "red" ) # "\##{color}" )
+    @shape.draw( @context, "\##{color}" )
 
 
   maxFrequency: =>
     max = 0
     freq = 0
     for i in [0...@analyser.frequencyBinCount]
-      alert( "Non-zero!" ) if @bands[i] > 0
       if @bands[i] > max
         freq = i
         max = @bands[i]

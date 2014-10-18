@@ -51,7 +51,7 @@
       var color;
       this.analyser.getByteFrequencyData(this.bands);
       color = Math.floor(this.maxFrequency() * 16777215 / 1024).toString(16);
-      return this.shape.draw(this.context, "red");
+      return this.shape.draw(this.context, "\#" + color);
     };
 
     Chat.prototype.maxFrequency = function() {
@@ -59,9 +59,6 @@
       max = 0;
       freq = 0;
       for (i = _i = 0, _ref = this.analyser.frequencyBinCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        if (this.bands[i] > 0) {
-          alert("Non-zero!");
-        }
         if (this.bands[i] > max) {
           freq = i;
           max = this.bands[i];
