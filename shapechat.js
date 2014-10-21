@@ -7,8 +7,7 @@
     function Square() {}
 
     Square.prototype.draw = function(context, color) {
-      console.log("Told to draw " + color);
-      context.rect(20, 20, 150, 150);
+      context.rect(20, 20, 400, 400);
       context.fillStyle = color;
       return context.fill();
     };
@@ -39,34 +38,90 @@
       this.stream = mediaStream;
       this.audioContext = new AudioContext();
       this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 1024;
+      this.analyser.fftSize = 128;
+      this.analyser.smoothingTimeConstant = 0.85;
       this.source = this.audioContext.createMediaStreamSource(this.stream);
       this.source.connect(this.analyser);
-      this.analyser.connect(this.audioContext.destination);
       this.bands = new Uint8Array(this.analyser.frequencyBinCount);
+      this.bucketSize = Math.round(this.analyser.frequencyBinCount / 6);
       return setInterval(this.doColouring, 100);
     };
 
     Chat.prototype.doColouring = function() {
-      var color;
+      var color, hexScore, n, rgb, rgbRaw, rgbStr, total;
+      console.info(this.bands);
       this.analyser.getByteFrequencyData(this.bands);
-      color = Math.floor(this.maxFrequency() * 16777215 / 1024).toString(16).toUpperCase();
-      color = ("000000" + color).substr(-6);
-      return this.shape.draw(this.context, "\#" + color);
+      hexScore = Math.round(this.maxFrequency() * 16777215 / 128).toString(16).toUpperCase();
+      color = ("000000" + hexScore).substr(-6);
+      rgbRaw = {
+        b: this.channelOne(),
+        g: this.channelTwo(),
+        r: this.channelThree()
+      };
+      console.info(rgbRaw);
+      total = rgbRaw.r + rgbRaw.g + rgbRaw.b;
+      console.log(total);
+      n = function(channelValue) {
+        return Math.round(channelValue * (6000 / total) / 10);
+      };
+      rgb = {
+        r: n(rgbRaw.r),
+        g: n(rgbRaw.g),
+        b: n(rgbRaw.b)
+      };
+      console.info(rgb);
+      rgbStr = "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
+      console.log("Drawing " + rgbStr);
+      return this.shape.draw(this.context, rgbStr);
     };
 
     Chat.prototype.maxFrequency = function() {
       var freq, i, max, _i, _ref;
       max = 0;
       freq = 0;
-      for (i = _i = 0, _ref = this.analyser.frequencyBinCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      for (i = _i = 1, _ref = this.analyser.frequencyBinCount; 1 <= _ref ? _i < _ref : _i > _ref; i = 1 <= _ref ? ++_i : --_i) {
         if (this.bands[i] > max) {
           freq = i;
           max = this.bands[i];
         }
       }
-      console.log("Max " + max + " Freq " + freq);
       return freq;
+    };
+
+    Chat.prototype.soundScore = function() {
+      var i, score, _i, _ref;
+      score = 0;
+      for (i = _i = 0, _ref = this.analyser.frequencyBinCount; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+        score += i * this.bands[i];
+      }
+      return score;
+    };
+
+    Chat.prototype.channelOne = function() {
+      var i, score, _i, _ref;
+      score = 0;
+      for (i = _i = 0, _ref = this.bucketSize; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        score += this.bands[i];
+      }
+      return score * 0.7;
+    };
+
+    Chat.prototype.channelTwo = function() {
+      var i, score, _i, _ref, _ref1;
+      score = 0;
+      for (i = _i = _ref = this.bucketSize, _ref1 = this.bucketSize * 2; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = _ref <= _ref1 ? ++_i : --_i) {
+        score += this.bands[i];
+      }
+      return score * 1.5;
+    };
+
+    Chat.prototype.channelThree = function() {
+      var i, score, _i, _ref, _ref1;
+      score = 0;
+      for (i = _i = _ref = this.bucketSize * 2, _ref1 = this.bucketSize * 3; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = _ref <= _ref1 ? ++_i : --_i) {
+        score += this.bands[i];
+      }
+      return score * 2.5;
     };
 
     Chat.prototype.error = function() {
