@@ -19,14 +19,14 @@ class Chat
     @stream = mediaStream
     @audioContext = new AudioContext()
     @analyser = @audioContext.createAnalyser()
-    @analyser.fftSize = 1024
-    # @analyser.minDecibels = -90;
-    # @analyser.maxDecibels = -10;
-    # @analyser.smoothingTimeConstant = 0.85;
+#    @analyser.fftSize = 32
+    @analyser.minDecibels = -40;
+    @analyser.maxDecibels = -20;
+    @analyser.smoothingTimeConstant = 0.9;
 
     @source = @audioContext.createMediaStreamSource(@stream)
     @source.connect( @analyser )
-    @analyser.connect( @audioContext.destination )
+#    @analyser.connect( @audioContext.destination )
     @bands = new Uint8Array(@analyser.frequencyBinCount)
     setInterval( @doColouring, 100 )
 
