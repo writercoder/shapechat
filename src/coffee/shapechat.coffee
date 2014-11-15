@@ -59,4 +59,4 @@ $ ->
   chat = new Chat()
   chat.listen()
   chat.drawShape()
-  
+
