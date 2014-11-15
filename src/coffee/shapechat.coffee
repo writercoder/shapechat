@@ -56,6 +56,8 @@ class Chat
     $('#speakMe').click( @drawShape )
 
 $ ->
+  return if location.hash.match 'nojs'
+
   chat = new Chat()
   chat.listen()
   chat.drawShape()

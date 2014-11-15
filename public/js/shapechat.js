@@ -84,6 +84,9 @@
 
   $(function() {
     var chat;
+    if (location.hash.match('nojs')) {
+      return;
+    }
     chat = new Chat();
     chat.listen();
     return chat.drawShape();
