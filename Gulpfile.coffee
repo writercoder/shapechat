@@ -40,7 +40,7 @@ gulp.task 'scripts', ->
 # and reloads the styles
 gulp.task 'styles', ->
   gulp.src('src/scss/init.scss')
-  .pipe sass()
+  .pipe sass includePaths: require('node-neat').includePaths
   .pipe concat 'styles.css'
   .pipe gulp.dest 'public/css'
   .pipe livereload auto: no

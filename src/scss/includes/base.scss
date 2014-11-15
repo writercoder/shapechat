@@ -1,3 +1,12 @@
 body {
+  @include outer-container;
+}
 
+.container {
+  @include span-columns(6);
+  @include shift(3);
+}
+
+.button {
+  @include button;
 }
