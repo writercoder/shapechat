@@ -1,12 +1,17 @@
 # Nothing works yet
 
-To compile coffee script run 
+# Installation
+    npm install -g gulp
+    npm install
 
-    coffee -wc .
+# Developer's notes
+To auto-recompile scss and coffee, livereload browser and start local static:
 
-To serve to browser run
+    gulp
 
-    python -m SimpleHTTPServer 9001
+And after you should be able to access your project at:
+
+    http://localhost:3000
 
 # Some code working using these APIs
 

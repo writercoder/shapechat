@@ -4,33 +4,28 @@ gutil  = require 'gulp-util'
 coffee  = require 'gulp-coffee'
 concat  = require 'gulp-concat'
 sass    = require 'gulp-sass'
-refresh = require 'gulp-livereload'
+injectLiveReload = require 'connect-livereload'
+livereload = require 'gulp-livereload'
 
-connect = require 'connect'
-connectStatic  = require 'serve-static'
-connectDir     = require 'serve-index'
+express = require 'express'
+serveStatic = require 'serve-static'
+
 http    = require 'http'
 path    = require 'path'
-lr      = require 'tiny-lr'
-server  = do lr
 
 # Starts the webserver (http://localhost:3000)
 gulp.task 'webserver', ->
+  livereload.listen()
+
   port = 3000
   hostname = null # allow to connect from anywhere
-  base = path.resolve './public'
-  directory = path.resolve './public'
+  base = path.resolve __dirname + '/public'
 
-  app = connect()
-  .use(connectStatic base)
-  .use(connectDir directory)
+  app = express()
+  app.use injectLiveReload()
+  app.use serveStatic base
+  app.listen port, hostname
 
-  http.createServer(app).listen port, hostname
-
-# Starts the livereload server
-gulp.task 'livereload', ->
-  server.listen 35729, (err) ->
-    console.log err if err?
 
 # Compiles CoffeeScript files into js file
 # and reloads the page
@@ -39,7 +34,7 @@ gulp.task 'scripts', ->
   .pipe(concat 'shapechat.coffee')
   .pipe(do coffee)
   .pipe(gulp.dest 'public/js')
-  .pipe(refresh server)
+  .pipe livereload auto: no
 
 # Compiles Sass files into css file
 # and reloads the styles
@@ -48,24 +43,26 @@ gulp.task 'styles', ->
   .pipe(sass includePaths: ['src/scss/includes'])
   .pipe(concat 'styles.css')
   .pipe(gulp.dest 'public/css')
-  .pipe(refresh server)
+  .pipe livereload auto: no
 
 # Reloads the page
 gulp.task 'html', ->
-  gulp.src('*.html')
-  .pipe(refresh server)
+  gulp.src('public/**/*.html')
+  .pipe livereload auto: no
 
 # The default task
 gulp.task 'default', ->
-  gulp.run 'webserver', 'livereload', 'scripts', 'styles'
+  gutil.log 'grrrunt'
+  gulp.run 'webserver', 'scripts', 'styles', 'html'
 
   # Watches files for changes
   gulp.watch 'src/coffee/**', ->
     gulp.run 'scripts'
 
-    gulp.watch 'src/scss/**', ->
-      gulp.run 'styles'
+  gulp.watch 'src/scss/**', ->
+    gulp.run 'styles'
 
-      gulp.watch 'public/*.html', ->
-        gulp.run 'html'
+  gulp.watch 'public/**/*.html', ->
+    gutil.log 'bang! html!'
+    gulp.run 'html'
 
