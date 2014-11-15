@@ -39,10 +39,10 @@ gulp.task 'scripts', ->
 # Compiles Sass files into css file
 # and reloads the styles
 gulp.task 'styles', ->
-  gulp.src('styles/scss/init.scss')
-  .pipe(sass includePaths: ['src/scss/includes'])
-  .pipe(concat 'styles.css')
-  .pipe(gulp.dest 'public/css')
+  gulp.src('src/scss/init.scss')
+  .pipe sass()
+  .pipe concat 'styles.css'
+  .pipe gulp.dest 'public/css'
   .pipe livereload auto: no
 
 # Reloads the page
